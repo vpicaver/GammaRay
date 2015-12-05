@@ -1,5 +1,5 @@
 /*
-  positioning.h
+  positioninginterface.cpp
 
   This file is part of GammaRay, the Qt application inspection and
   manipulation tool.
@@ -26,38 +26,28 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef GAMMARAY_POSITIONING_H
-#define GAMMARAY_POSITIONING_H
-
 #include "positioninginterface.h"
 
-#include <core/toolfactory.h>
+#include <common/objectbroker.h>
 
-#include <QGeoPositionInfoSource>
-#include <QObject>
+using namespace GammaRay;
 
-namespace GammaRay {
-
-class Positioning : public PositioningInterface
+PositioningInterface::PositioningInterface(QObject* parent):
+    QObject(parent),
+    m_positioningOverrideEnabled(false)
 {
-    Q_OBJECT
-public:
-    explicit Positioning(ProbeInterface *probe, QObject *parent = Q_NULLPTR);
-};
-
-class PositioningFactory :  public QObject, public StandardToolFactory<QGeoPositionInfoSource, Positioning>
-{
-    Q_OBJECT
-    Q_INTERFACES(GammaRay::ToolFactory)
-    Q_PLUGIN_METADATA(IID "com.kdab.GammaRay.ToolFactory" FILE "gammaray_positioning.json")
-public:
-    explicit PositioningFactory(QObject *parent = Q_NULLPTR) : QObject(parent)
-    {
-    }
-
-    QString name() const Q_DECL_OVERRIDE;
-};
-
+    ObjectBroker::registerObject<PositioningInterface*>(this);
 }
 
-#endif // GAMMARAY_POSITIONING_H
+bool PositioningInterface::positioningOverrideEnabled() const
+{
+    return m_positioningOverrideEnabled;
+}
+
+void PositioningInterface::setPositioningOverrideEnabled(bool enabled)
+{
+    if (m_positioningOverrideEnabled == enabled)
+        return;
+    m_positioningOverrideEnabled = enabled;
+    emit positioningOverrideEnabledChanged();
+}

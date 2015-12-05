@@ -1,5 +1,5 @@
 /*
-  positioning.h
+  positioningclient.cpp
 
   This file is part of GammaRay, the Qt application inspection and
   manipulation tool.
@@ -26,38 +26,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef GAMMARAY_POSITIONING_H
-#define GAMMARAY_POSITIONING_H
+#include "positioningclient.h"
 
-#include "positioninginterface.h"
+using namespace GammaRay;
 
-#include <core/toolfactory.h>
-
-#include <QGeoPositionInfoSource>
-#include <QObject>
-
-namespace GammaRay {
-
-class Positioning : public PositioningInterface
+PositioningClient::PositioningClient(QObject* parent):
+    PositioningInterface(parent)
 {
-    Q_OBJECT
-public:
-    explicit Positioning(ProbeInterface *probe, QObject *parent = Q_NULLPTR);
-};
-
-class PositioningFactory :  public QObject, public StandardToolFactory<QGeoPositionInfoSource, Positioning>
-{
-    Q_OBJECT
-    Q_INTERFACES(GammaRay::ToolFactory)
-    Q_PLUGIN_METADATA(IID "com.kdab.GammaRay.ToolFactory" FILE "gammaray_positioning.json")
-public:
-    explicit PositioningFactory(QObject *parent = Q_NULLPTR) : QObject(parent)
-    {
-    }
-
-    QString name() const Q_DECL_OVERRIDE;
-};
-
 }
-
-#endif // GAMMARAY_POSITIONING_H
