@@ -32,6 +32,7 @@
 #include <core/metaobjectrepository.h>
 #include <core/varianthandler.h>
 
+#include <QDataStream>
 #include <QGeoPositionInfoSource>
 #include <QGeoSatelliteInfoSource>
 #include <QGeoAreaMonitorSource>
@@ -62,6 +63,7 @@ static QString positioningMethodsToString(QGeoPositionInfoSource::PositioningMet
 
 Positioning::Positioning(ProbeInterface* probe, QObject* parent): PositioningInterface(parent)
 {
+    qRegisterMetaTypeStreamOperators<QGeoPositionInfo>("QGeoPositionInfo");
     registerMetaTypes();
     connect(probe->probe(), SIGNAL(objectCreated(QObject*)), this, SLOT(objectAdded(QObject*)));
 }
