@@ -225,10 +225,12 @@ if(Qt5Core_FOUND)
     Bluetooth
     Concurrent
     Designer
+    Location
     Positioning
     PrintSupport
     Qml
     Quick
+    QuickWidgets
     Svg
     Script
     ScriptTools
