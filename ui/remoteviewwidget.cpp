@@ -65,6 +65,7 @@ RemoteViewWidget::RemoteViewWidget(QWidget *parent)
     setMouseTracking(true);
     setMinimumSize(QSize(400, 300));
     setFocusPolicy(Qt::StrongFocus);
+    setAttribute(Qt::WA_AcceptTouchEvents);
 
     // Background
     QPixmap bgPattern(20, 20);
@@ -868,6 +869,24 @@ bool RemoteViewWidget::eventFilter(QObject *receiver, QEvent *event)
     return QWidget::eventFilter(receiver, event);
 }
 
+bool RemoteViewWidget::event(QEvent *event)
+{
+    if (m_interactionMode == InputRedirection) {
+        switch (event->type()) {
+        case QEvent::TouchBegin:
+        case QEvent::TouchCancel:
+        case QEvent::TouchEnd:
+        case QEvent::TouchUpdate:
+            sendTouchEvent(static_cast<QTouchEvent *>(event));
+
+        default:
+            break;
+        }
+    }
+
+    return QWidget::event(event);
+}
+
 int RemoteViewWidget::contentWidth() const
 {
     return width() - verticalRulerWidth();
@@ -921,4 +940,16 @@ void RemoteViewWidget::sendWheelEvent(QWheelEvent *event)
 #endif
     m_interface->sendWheelEvent(mapToSource(event->pos()), pixelDelta, angleDelta,
                                 event->buttons(), event->modifiers());
+}
+
+void RemoteViewWidget::sendTouchEvent(QTouchEvent *event)
+{finir
+    m_interface->sendTouchEvent(event->type(),
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+                                event->device()->type(),
+                                event->device()->maximumTouchPoints(),
+#else
+                                event->deviceType(),
+#endif
+                                event->modifiers(), event->touchPointStates(), event->touchPoints());
 }

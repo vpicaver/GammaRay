@@ -41,6 +41,21 @@
 
 using namespace GammaRay;
 
+namespace {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+QTouchDevice *findCompatibleTouchDevice(int touchDeviceType, int touchDeviceMaxTouchPoints)
+{
+    foreach (const QTouchDevice *device, QTouchDevice::devices()) {
+        if (device->type() == touchDeviceType && device->maximumTouchPoints() >= touchDeviceMaxTouchPoints) {
+            return const_cast<QTouchDevice *>(device);
+        }
+    }
+
+    return const_cast<QTouchDevice *>(QTouchDevice::devices().value(0));
+}
+#endif
+}
+
 RemoteViewServer::RemoteViewServer(const QString &name, QObject *parent)
     : RemoteViewInterface(name, parent)
     , m_eventReceiver(Q_NULLPTR)
@@ -149,6 +164,27 @@ void RemoteViewServer::sendWheelEvent(const QPoint &localPos, QPoint pixelDelta,
                                  (Qt::KeyboardModifiers)modifiers, orientation);
 #endif
     QCoreApplication::postEvent(m_eventReceiver, event);
+}
+
+void RemoteViewServer::sendTouchEvent(int type, int touchDeviceType, int touchDeviceMaxTouchPoints, int modifiers, Qt::TouchPointStates touchPointStates, const QList<QTouchEvent::TouchPoint> &touchPoints)
+{
+    if (!m_eventReceiver)
+        return;
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    QTouchDevice *device = findCompatibleTouchDevice(touchDeviceType, touchDeviceMaxTouchPoints);
+
+    if (!device) {
+        qWarning("Can't sendTouchEvent: no compatible device found.");
+        return;
+    }
+
+    auto event = new QTouchEvent(QEvent::Type(type), device, Qt::KeyboardModifiers(modifiers), touchPointStates, touchPoints);
+
+#else
+    auto event = new QTouchEvent(QEvent::Type(type), touchDeviceType, Qt::KeyboardModifiers(modifiers), touchPointStates, touchPoints);
+#endif
+    QCoreApplication::sendEvent(m_eventReceiver, event);
 }
 
 void RemoteViewServer::setViewActive(bool active)

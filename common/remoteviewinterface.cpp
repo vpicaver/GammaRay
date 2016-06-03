@@ -43,6 +43,9 @@ RemoteViewInterface::RemoteViewInterface(const QString &name, QObject *parent)
 {
     ObjectBroker::registerObject(name, this);
 
+    qRegisterMetaType<QTouchEvent::TouchPoint>();
+    qRegisterMetaType<QList<QTouchEvent::TouchPoint >>();
+
     qRegisterMetaType<RequestMode>();
     qRegisterMetaTypeStreamOperators<RequestMode>();
     qRegisterMetaTypeStreamOperators<GammaRay::RemoteViewFrame>();

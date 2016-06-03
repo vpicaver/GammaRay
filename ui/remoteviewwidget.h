@@ -43,6 +43,8 @@ class QAbstractItemModel;
 class QActionGroup;
 class QStandardItemModel;
 class QModelIndex;
+class QEvent;
+class QTouchEvent;
 QT_END_NAMESPACE
 
 namespace GammaRay {
@@ -138,6 +140,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
 
     bool eventFilter(QObject *receiver, QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     void setupActions();
@@ -154,6 +157,7 @@ private:
     void sendMouseEvent(QMouseEvent *event);
     void sendKeyEvent(QKeyEvent *event);
     void sendWheelEvent(QWheelEvent *event);
+    void sendTouchEvent(QTouchEvent *event);
 
     // size of the content area, ie. excluding the rulers
     int contentWidth() const;
