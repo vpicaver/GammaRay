@@ -65,7 +65,12 @@ RemoteViewWidget::RemoteViewWidget(QWidget *parent)
     setMouseTracking(true);
     setMinimumSize(QSize(400, 300));
     setFocusPolicy(Qt::StrongFocus);
+    QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
+    QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, false);
+    window()->setAttribute(Qt::WA_AcceptTouchEvents);
+    window()->setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
     setAttribute(Qt::WA_AcceptTouchEvents);
+    setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
 
     // Background
     QPixmap bgPattern(20, 20);
@@ -640,9 +645,54 @@ QPoint RemoteViewWidget::mapToSource(QPoint pos) const
     return (pos - QPoint(m_x, m_y)) / m_zoom;
 }
 
+QPointF RemoteViewWidget::mapToSource(QPointF pos) const
+{
+    return (pos - QPointF(m_x, m_y)) / m_zoom;
+}
+
 QPoint RemoteViewWidget::mapFromSource(QPoint pos) const
 {
     return pos * m_zoom + QPoint(m_x, m_y);
+}
+
+QPointF RemoteViewWidget::mapFromSource(QPointF pos) const
+{
+    return pos * m_zoom + QPointF(m_x, m_y);
+}
+
+QTouchEvent::TouchPoint RemoteViewWidget::mapToSource(const QTouchEvent::TouchPoint &point)
+{
+    QTouchEvent::TouchPoint p;
+
+    p.setFlags(point.flags());
+    p.setId(point.id());
+    p.setPressure(point.pressure());
+    p.setState(point.state());
+
+    // Dunnow how to translate, screen coordinate
+    p.setVelocity(point.velocity());
+
+    p.setStartPos(mapToSource(point.startPos()));
+    p.setLastPos(mapToSource(point.lastPos()));
+    p.setPos(mapToSource(point.pos())); // relative
+    p.setRect(point.rect());
+
+    p.setStartNormalizedPos(mapToSource(point.startNormalizedPos()));
+    p.setLastNormalizedPos(mapToSource(point.lastNormalizedPos()));
+    p.setNormalizedPos(mapToSource(point.normalizedPos()));
+
+    // We don't map those locally, we will map them remotly
+    /*p.setStartScenePos(mapToSource(point.startScenePos()));
+    p.setLastScenePos(mapToSource(point.lastScenePos()));
+    p.setScenePos(mapToSource(point.scenePos()));
+    p.setSceneRect(point.sceneRect());
+
+    p.setStartScreenPos(mapToSource(point.startScreenPos()));
+    p.setLastScreenPos(mapToSource(point.lastScreenPos()));
+    p.setScreenPos(mapToSource(point.screenPos()));
+    p.setScreenRect(point.screenRect());*/
+
+    return p;
 }
 
 void RemoteViewWidget::clampPanPosition()
@@ -863,28 +913,22 @@ bool RemoteViewWidget::eventFilter(QObject *receiver, QEvent *event)
                 m_interface->setViewActive(isVisible());
             else if (event->type() == QEvent::Hide)
                 m_interface->setViewActive(false);
+            else if (m_interactionMode == InputRedirection) {
+                switch (event->type()) {
+                case QEvent::TouchBegin:
+                case QEvent::TouchCancel:
+                case QEvent::TouchEnd:
+                case QEvent::TouchUpdate:
+                    sendTouchEvent(static_cast<QTouchEvent *>(event));
+
+                default:
+                    break;
+                }
+            }
         }
     }
 
     return QWidget::eventFilter(receiver, event);
-}
-
-bool RemoteViewWidget::event(QEvent *event)
-{
-    if (m_interactionMode == InputRedirection) {
-        switch (event->type()) {
-        case QEvent::TouchBegin:
-        case QEvent::TouchCancel:
-        case QEvent::TouchEnd:
-        case QEvent::TouchUpdate:
-            sendTouchEvent(static_cast<QTouchEvent *>(event));
-
-        default:
-            break;
-        }
-    }
-
-    return QWidget::event(event);
 }
 
 int RemoteViewWidget::contentWidth() const
@@ -943,7 +987,18 @@ void RemoteViewWidget::sendWheelEvent(QWheelEvent *event)
 }
 
 void RemoteViewWidget::sendTouchEvent(QTouchEvent *event)
-{finir
+{
+    if (event->type() == QEvent::TouchBegin) {
+        event->accept();
+    }
+
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    foreach (const QTouchEvent::TouchPoint &point, event->touchPoints()) {
+        touchPoints << mapToSource(point);
+    }
+
+    // also send target, window...
+
     m_interface->sendTouchEvent(event->type(),
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
                                 event->device()->type(),
@@ -951,5 +1006,5 @@ void RemoteViewWidget::sendTouchEvent(QTouchEvent *event)
 #else
                                 event->deviceType(),
 #endif
-                                event->modifiers(), event->touchPointStates(), event->touchPoints());
+                                event->modifiers(), event->touchPointStates(), touchPoints);
 }

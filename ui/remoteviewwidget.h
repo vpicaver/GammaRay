@@ -36,6 +36,7 @@
 #include <common/remoteviewframe.h>
 
 #include <QWidget>
+#include <QTouchEvent>
 #include <QPointer>
 
 QT_BEGIN_NAMESPACE
@@ -124,8 +125,12 @@ protected:
 
     // translate from view coordinates to source coordinates
     QPoint mapToSource(QPoint pos) const;
+    QPointF mapToSource(QPointF pos) const;
     // translates from source coordinates to view coordinates
     QPoint mapFromSource(QPoint pos) const;
+    QPointF mapFromSource(QPointF pos) const;
+    // translate from view to source coordinates
+    QTouchEvent::TouchPoint mapToSource(const QTouchEvent::TouchPoint &point);
 
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
@@ -140,7 +145,6 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
 
     bool eventFilter(QObject *receiver, QEvent *event) Q_DECL_OVERRIDE;
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     void setupActions();
