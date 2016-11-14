@@ -1,5 +1,5 @@
 /*
-  qmlsupportuifactory.cpp
+  qmlbindingextension.h
 
   This file is part of GammaRay, the Qt application inspection and
   manipulation tool.
@@ -26,31 +26,26 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "qmlsupportuifactory.h"
-#include "qmlbindingtab.h"
-#include "qmlcontexttab.h"
-#include "qmltypetab.h"
+#ifndef GAMMARAY_QMLBINDINGEXTENSION_H
+#define GAMMARAY_QMLBINDINGEXTENSION_H
 
-#include <ui/propertywidget.h>
+#include <core/propertycontrollerextension.h>
 
-using namespace GammaRay;
+namespace GammaRay {
 
-QString QmlSupportUiFactory::id() const
+class QmlBindingModel;
+
+class QmlBindingExtension : public PropertyControllerExtension
 {
-    return QString();
+public:
+    explicit QmlBindingExtension(PropertyController *controller);
+    ~QmlBindingExtension();
+
+    bool setQObject(QObject *object) Q_DECL_OVERRIDE;
+
+private:
+    QmlBindingModel *m_bindingModel;
+};
 }
 
-void QmlSupportUiFactory::initUi()
-{
-    PropertyWidget::registerTab<QmlBindingTab>(QStringLiteral("qmlBindings"), tr("Bindings"),
-                                               PropertyWidgetTabPriority::Advanced);
-    PropertyWidget::registerTab<QmlContextTab>(QStringLiteral("qmlContext"), tr("QML Context"),
-                                               PropertyWidgetTabPriority::Advanced);
-    PropertyWidget::registerTab<QmlTypeTab>(QStringLiteral("qmlType"), tr("QML Type"),
-                                            PropertyWidgetTabPriority::Exotic);
-}
-
-QWidget *GammaRay::QmlSupportUiFactory::createWidget(QWidget *)
-{
-    return Q_NULLPTR;
-}
+#endif // GAMMARAY_QMLBINDINGEXTENSION_H

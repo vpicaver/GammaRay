@@ -1,5 +1,5 @@
 /*
-  qmlsupportuifactory.cpp
+  qmlbindingmodel.h
 
   This file is part of GammaRay, the Qt application inspection and
   manipulation tool.
@@ -26,31 +26,40 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "qmlsupportuifactory.h"
-#include "qmlbindingtab.h"
-#include "qmlcontexttab.h"
-#include "qmltypetab.h"
+#ifndef GAMMARAY_QMLBINDINGMODEL_H
+#define GAMMARAY_QMLBINDINGMODEL_H
 
-#include <ui/propertywidget.h>
+#include <QAbstractTableModel>
+#include <QVector>
 
-using namespace GammaRay;
+namespace GammaRay {
 
-QString QmlSupportUiFactory::id() const
+class QmlBindingModel : public QAbstractTableModel
 {
-    return QString();
+    Q_OBJECT
+public:
+    explicit QmlBindingModel(QObject *parent = Q_NULLPTR);
+    ~QmlBindingModel();
+
+    void setObject(QObject *obj);
+
+    int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
+    int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
+    QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
+
+private:
+    struct BindingInfo {
+        QString expression;
+        QString sourceLocation;
+        int propertyIndex;
+    };
+    static QVector<BindingInfo> bindingsFromObject(QObject *obj);
+
+    QObject *m_obj;
+    QVector<BindingInfo> m_bindings;
+
+};
 }
 
-void QmlSupportUiFactory::initUi()
-{
-    PropertyWidget::registerTab<QmlBindingTab>(QStringLiteral("qmlBindings"), tr("Bindings"),
-                                               PropertyWidgetTabPriority::Advanced);
-    PropertyWidget::registerTab<QmlContextTab>(QStringLiteral("qmlContext"), tr("QML Context"),
-                                               PropertyWidgetTabPriority::Advanced);
-    PropertyWidget::registerTab<QmlTypeTab>(QStringLiteral("qmlType"), tr("QML Type"),
-                                            PropertyWidgetTabPriority::Exotic);
-}
-
-QWidget *GammaRay::QmlSupportUiFactory::createWidget(QWidget *)
-{
-    return Q_NULLPTR;
-}
+#endif // GAMMARAY_QMLBINDINGMODEL_H
