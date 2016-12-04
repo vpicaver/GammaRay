@@ -273,6 +273,7 @@ if(Qt5Core_FOUND)
     Qml
     Quick
     QuickWidgets
+    Scxml
     Svg
     Script
     ScriptTools
@@ -326,6 +327,7 @@ if(Qt5Core_FOUND)
   set(HAVE_QT_CONCURRENT ${Qt5Concurrent_FOUND})
   set(HAVE_QT_WIDGETS ${Qt5Widgets_FOUND})
   set(HAVE_QT_SVG ${Qt5Svg_FOUND})
+  set(HAVE_QT_SCXML ${Qt5Scxml_FOUND})
   set(HAVE_QT_DESIGNER ${Qt5Designer_FOUND})
   set(HAVE_QT_PRINTSUPPORT ${Qt5PrintSupport_FOUND})
   set(HAVE_QT_WEBKIT ${Qt5WebKit_FOUND})

@@ -28,6 +28,9 @@
 #include "statemachineviewerserver.h"
 
 #include "qsmstatemachinedebuginterface.h"
+#ifdef HAVE_QT_SCXML
+#include "qscxmlstatemachinedebuginterface.h"
+#endif
 #include "statemodel.h"
 #include "statemachinedebuginterface.h"
 #include "statemachinewatcher.h"
@@ -41,6 +44,10 @@
 
 #include <QStateMachine>
 #include <QItemSelectionModel>
+
+#ifdef HAVE_QT_SCXML
+#include <QScxmlStateMachine>
+#endif
 
 #include <QtPlugin>
 
@@ -59,7 +66,7 @@ StateMachineViewerServer::StateMachineViewerServer(ProbeInterface *probe, QObjec
     connect(stateSelectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             SLOT(stateSelectionChanged()));
 
-    auto stateMachineFilter = new ObjectTypeFilterProxyModel<QStateMachine>(this);
+    auto stateMachineFilter = new ObjectTypeFilterProxyModel<QStateMachine, QScxmlStateMachine>(this);
     stateMachineFilter->setSourceModel(probe->objectListModel());
     m_stateMachinesModel = new ServerProxyModel<SingleColumnObjectProxyModel>(this);
     m_stateMachinesModel->setSourceModel(stateMachineFilter);
@@ -176,6 +183,13 @@ void StateMachineViewerServer::selectStateMachine(int row)
         setSelectedStateMachine(new QSMStateMachineDebugInterface(machine));
         return;
     }
+#ifdef HAVE_QT_SCXML
+    QScxmlStateMachine *qscxmlMachine = qobject_cast<QScxmlStateMachine *>(stateMachineObject);
+    if (qscxmlMachine) {
+        setSelectedStateMachine(new QScxmlStateMachineDebugInterface(qscxmlMachine));
+        return;
+    }
+#endif
     setSelectedStateMachine(nullptr);
 }
 
@@ -302,6 +316,13 @@ void StateMachineViewerServer::toggleRunning()
         selectedStateMachine()->stop();
     else
         selectedStateMachine()->start();
+}
+
+StateMachineViewerFactory::StateMachineViewerFactory(QObject *parent)
+    : QObject(parent)
+{
+    setSupportedTypes(QVector<QByteArray>() << QByteArrayLiteral("QStateMachine")
+                                            << QByteArrayLiteral("QScxmlStateMachine"));
 }
 
 

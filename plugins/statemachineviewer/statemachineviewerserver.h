@@ -105,10 +105,7 @@ class StateMachineViewerFactory : public QObject,
     Q_PLUGIN_METADATA(IID "com.kdab.GammaRay.ToolFactory" FILE "gammaray_statemachineviewer.json")
 
 public:
-    explicit StateMachineViewerFactory(QObject *parent = 0)
-        : QObject(parent)
-    {
-    }
+    explicit StateMachineViewerFactory(QObject *parent = 0);
 };
 }
 
