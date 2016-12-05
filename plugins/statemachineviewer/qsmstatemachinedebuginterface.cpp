@@ -35,9 +35,10 @@
 #include <QFinalState>
 #include <QHistoryState>
 #include <QMetaEnum>
+#include <QSignalTransition>
 #include <QState>
 #include <QStateMachine>
-#include <QSignalTransition>
+#include <QStringList>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
 Q_DECLARE_METATYPE(Qt::KeyboardModifiers)
@@ -59,6 +60,17 @@ static QAbstractTransition *fromTransition(Transition transition) {
 
 static Transition toTransition(QAbstractTransition *transition) {
     return Transition(reinterpret_cast<quintptr>(transition));
+}
+
+template <typename T>
+static QVector<T*> childrenOfType(QObject *parent) {
+    Q_ASSERT(parent);
+    QVector<T*> v;
+    foreach (auto obj, parent->children()) {
+        if (auto child = qobject_cast<T*>(obj))
+            v.push_back(child);
+    }
+    return v;
 }
 
 QSMStateMachineDebugInterface::QSMStateMachineDebugInterface(QStateMachine *stateMachine)
@@ -123,7 +135,7 @@ QVector<State> QSMStateMachineDebugInterface::stateChildren(State parentId) cons
         parent = m_stateMachine;
 
     QVector<State> result;
-    foreach (auto state, parent->findChildren<QAbstractState*>(QString(), Qt::FindDirectChildrenOnly)) {
+    foreach (auto state, childrenOfType<QAbstractState>(parent)) {
         result.append(toState(state));
     }
 
@@ -160,7 +172,7 @@ QString QSMStateMachineDebugInterface::transitions(State stateId) const
         return QString();
 
     QState *parent = state->parentState() ? state->parentState() : m_stateMachine;
-    QList<QAbstractState*> l = parent->findChildren<QAbstractState*>(QString(), Qt::FindDirectChildrenOnly);
+    const auto l = childrenOfType<QAbstractState>(parent);
 
     QStringList nums;
     QList<QAbstractTransition *> trs = state->transitions();
