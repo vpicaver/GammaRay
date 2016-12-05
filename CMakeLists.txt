@@ -273,7 +273,6 @@ if(Qt5Core_FOUND)
     Qml
     Quick
     QuickWidgets
-    Scxml
     Svg
     Script
     ScriptTools
@@ -283,6 +282,7 @@ if(Qt5Core_FOUND)
     Widgets
     WaylandCompositor
   )
+  find_package(Qt5Scxml 5.8 NO_MODULE QUIET)
 
   # if translation/doc host tools are missing, the Qt5 cmake config files throw errors...
   if(NOT CMAKE_CROSSCOMPILING)
