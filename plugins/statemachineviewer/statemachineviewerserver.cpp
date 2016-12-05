@@ -66,7 +66,11 @@ StateMachineViewerServer::StateMachineViewerServer(ProbeInterface *probe, QObjec
     connect(stateSelectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             SLOT(stateSelectionChanged()));
 
+#ifdef HAVE_QT_SCXML
     auto stateMachineFilter = new ObjectTypeFilterProxyModel<QStateMachine, QScxmlStateMachine>(this);
+#else
+    auto stateMachineFilter = new ObjectTypeFilterProxyModel<QStateMachine>(this);
+#endif
     stateMachineFilter->setSourceModel(probe->objectListModel());
     m_stateMachinesModel = new ServerProxyModel<SingleColumnObjectProxyModel>(this);
     m_stateMachinesModel->setSourceModel(stateMachineFilter);
