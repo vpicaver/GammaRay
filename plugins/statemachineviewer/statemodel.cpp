@@ -307,7 +307,15 @@ int StateModel::columnCount(const QModelIndex &parent) const
 
 QMap<int, QVariant> StateModel::itemData(const QModelIndex &index) const
 {
-    return QAbstractItemModel::itemData(index);
+    QMap<int, QVariant> map = QAbstractItemModel::itemData(index);
+    map.insert(ObjectModel::ObjectIdRole, this->data(index, ObjectModel::ObjectIdRole));
+    auto loc = this->data(index, ObjectModel::CreationLocationRole);
+    if (loc.isValid())
+        map.insert(ObjectModel::CreationLocationRole, loc);
+    loc = this->data(index, ObjectModel::DeclarationLocationRole);
+    if (loc.isValid())
+        map.insert(ObjectModel::DeclarationLocationRole, loc);
+    return map;
 }
 
 #include "moc_statemodel.cpp"

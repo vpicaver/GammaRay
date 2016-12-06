@@ -215,7 +215,14 @@ QString QSMStateMachineDebugInterface::stateDisplayType(State state) const
 
 QVector<Transition> QSMStateMachineDebugInterface::stateTransitions(State state) const
 {
-    return QVector<Transition>(); // FIXME
+    QVector<Transition> result;
+
+    foreach (auto object, fromState(state)->children()) {
+        if (auto transition = qobject_cast<QAbstractTransition *>(object))
+            result.append(toTransition(transition));
+    }
+
+    return result;
 }
 
 QString QSMStateMachineDebugInterface::transitionLabel(Transition t) const
